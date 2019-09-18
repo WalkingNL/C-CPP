@@ -3,7 +3,7 @@
 下面以list.cpp、list.h为例，进行展开。
 
 ### 静态库
-###### 基本储备
+##### 基本储备
     $ g++ -std=c++11 -c list.cpp  // (1)
   * -c 表示编译源文件，在这里就是编译list.cpp; 
   * -std=c++11 按照c++11的标准对list.cpp进行编译。
@@ -26,7 +26,7 @@
 
 在list.cpp中写上main()函数之后，把上面的命令再执行一次，就会发现，在当前目录(默认输出路径)中，出现a.out，正如上面解释的，他是一个可执行文件。
 
-###### 生成静态库
+##### 生成静态库
 为了生成一个静态库，把list.cpp中的main()函数去掉。使用命令
 
     $ g++ -std=c++11 -c list.cpp -o lib_list.o  // (4)
@@ -39,17 +39,17 @@
 
     $ ar rcs lib_list.a lib_list.o  // (5)
 
-###### 使用静态库
+##### 使用静态库
 现在，在另一个目录中，新建了一个main.cpp文件，里面加入了main()函数，需要调用上面list.cpp中的方法。首先编译main.cpp，使用下面的命令
 
-    $ g++ -c main.cpp -o main.o  // (6)
+    $ g++ -c main.cpp -o main.o  // 命令(6)
 然后生成可执行文件，命令见下
 
-    $ g++ -o main main.o /test/lib_list.a  // (7)
+    $ g++ -o main main.o /test/lib_list.a  // 命令(7)
 这样，生成可执行文件`main`。
 
 ### 动态库
-###### 创建动态库
+##### 创建动态库
 通用的命令格式
 
     g++ -shared -o 指定路径/static_lib.so 指定路径/obj1.o 指定路径/obj2.o 指定路径/obj3.o ......
@@ -73,4 +73,26 @@
 然后再使用`命令(8)`或者`命令(9)`(上面分析了，命令(9)中的-fPIC选项不起作用)，动态库`.so`文件就可以生成了。
 
 [注：CSDN中参考了一篇[博客](https://blog.csdn.net/seanwang_25/article/details/20702751)，这里并没有解释清楚]
-###### 使用动态库
+##### 使用动态库
+###### 第一种方法
+类似命令(7)那样，你可以用如下的命令使用动态库
+
+    # g++ -o main main.o ../test/dyn_lib_xist.so  // 命令(11)
+    # ./main //执行main
+但这种方法，并没有发挥出动态库的优势，因此，更多时候，使用第二种方法
+###### 第二种方法
+命令如下所示。但是这个命令会报错，见后面的图。
+
+    # g++ -o main main.o -L/test/ -ldyn_lib_xist.so  // 命令(12)
+  * -L选项，指定动态库的路径
+  * -l选项，指定动态库
+![](https://github.com/WalkingNL/Pics/blob/master/g%2B%2B-L.jpg)
+
+出现这个问题的原因是因为对动态库的命名方式不符合系统的要求，你可参考这个[链接](https://blog.csdn.net/u012655611/article/details/82858092)。更改命名后，见 命令(13)
+
+    # g++ -o main main.o -L/test/ -lxist  // 命令(13)
+对比命令(12)，发现`-l`之后不一样了，通过这样的写法，可以在`-L`指定的目录下，结合`-l`后的`xist`，最终找到完整的动态库libxist.so。如果你还不熟悉，在这个地方可以多试一下，原则上，根据动态库的命名方式(lib+名称+.so)，在-l后，接`名称`就可以了。否则，依然会报错。
+
+但到这里还没有完，因为执行完`命令(13)`之后，运行`./main`，会出现下图示的错误
+![](https://github.com/WalkingNL/Pics/blob/master/dynlib_fina.jpg)
+
