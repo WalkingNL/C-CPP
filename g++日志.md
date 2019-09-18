@@ -48,5 +48,29 @@
     $ g++ -o main main.o /test/lib_list.a  // (7)
 这样，生成可执行文件`main`。
 
-
 ### 动态库
+###### 创建动态库
+通用的命令格式
+
+    g++ -shared -o 指定路径/static_lib.so 指定路径/obj1.o 指定路径/obj2.o 指定路径/obj3.o ......
+* -shared 把目标文件链接成共享对象
+
+执行下面的命令创建动态库。
+    
+    $ g++ -shared -o dyn_lib_list.so lib_list.o  // 命令(8)
+执行结果，如下图所示。可以看到创建.so文件失败了！！！
+![](https://github.com/WalkingNL/Pics/blob/master/gcc-shared.jpg)
+
+哦，好吧，没有加-fPIC选项。那么加上之后，命令(8)就变成了，见以下
+
+    $ g++ -shared -fPIC -o dyn_lib_list.so ../Utilities/lib_list.o  // 命令(9)
+首先解释一下，-fPIC是告诉编译器生成位置无关的代码。只有位置无关的代码才可以被加载到地址空间的任意位置而不需要修改。那么执行这条命令的结果参照下图
+![](https://github.com/WalkingNL/Pics/blob/master/g%2B%2B%20fPIC.jpg)
+
+和上一幅图对比一下，相同的错误。也就是说，加了-fPIC选项之后，对于执行结果，没有任何影响。既然没有影响，意味着这里加-fPIC选项是多余的。其实分析这条命令本身，就会发现，加-fPIC从语义上也讲不通，因为我们的本意是链接.o文件为.so文件，并非编译，而-fPIC是用于编译命令的选项。那如何解决图中的问题呢？其实仔细看一下图中的提示，有这么一句*recompile with -fPIC*。综合考虑就不难想到是`.o`文件的生成时，没有加-fPIC选项。对于静态库而言，自然不需要加-fPIC，但对于动态库，不加就不行了。所以，得重新生成`.o`文件，使用下面的命令
+    
+    $ g++ -std=c++11 -fPIC -c list.cpp -o lib_list.o  // 命令(10)
+然后再使用`命令(8)`或者`命令(9)`(上面分析了，命令(9)中的-fPIC选项不起作用)，动态库`.so`文件就可以生成了。
+
+[注：CSDN中参考了一篇[博客](https://blog.csdn.net/seanwang_25/article/details/20702751)，这里并没有解释清楚]
+###### 使用动态库
