@@ -3,7 +3,7 @@
 下面以list.cpp、list.h为例，进行展开。
 
 ### 静态库
-###### 假设 list.cpp 与 list.h在同一目录下
+###### 基本储备
     $ g++ -std=c++11 -c list.cpp  // (1)
   * -c 表示编译源文件，在这里就是编译list.cpp; 
   * -std=c++11 按照c++11的标准对list.cpp进行编译。
@@ -26,8 +26,27 @@
 
 在list.cpp中写上main()函数之后，把上面的命令再执行一次，就会发现，在当前目录(默认输出路径)中，出现a.out，正如上面解释的，他是一个可执行文件。
 
+###### 生成静态库
 为了生成一个静态库，把list.cpp中的main()函数去掉。使用命令
 
     $ g++ -std=c++11 -c list.cpp -o lib_list.o  // (4)
-显式的指定<dl><u>生成<\u><\dl>一个lib_list.o的文件
+显式的指定生成一个lib_list.o的文件。
 
+通用的命令格式
+
+    ar rcs 指定路径/static_lib.a 指定路径/obj1.o 指定路径/obj2.o 指定路径/obj3.o ......
+一个静态库就是一系列目标文件的集合，这些目标文件被拷贝至一个后缀为`.a`的单个文件中。在我们的示例中，因为只有一个lib_list.o的文件，且都在一个目录中，故命令如下。这样就生成了lib_list.a的静态库。如何使用这个静态库呢？
+
+    $ ar rcs lib_list.a lib_list.o  // (5)
+
+###### 使用静态库
+现在，在另一个目录中，新建了一个main.cpp文件，里面加入了main()函数，需要调用上面list.cpp中的方法。首先编译main.cpp，使用下面的命令
+
+    $ g++ -c main.cpp -o main.o  // (6)
+然后生成可执行文件，命令见下
+
+    $ g++ -o main main.o /test/lib_list.a  // (7)
+这样，生成可执行文件`main`。
+
+
+### 动态库
