@@ -86,6 +86,7 @@
     # g++ -o main main.o -L/test/ -ldyn_lib_xist.so  // 命令(12)
   * -L选项，指定动态库的路径
   * -l选项，指定动态库
+  
 ![](https://github.com/WalkingNL/Pics/blob/master/g%2B%2B-L.jpg)
 
 出现这个问题的原因是因为对动态库的命名方式不符合系统的要求，你可参考这个[链接](https://blog.csdn.net/u012655611/article/details/82858092)。更改命名后，见 命令(13)
@@ -93,6 +94,13 @@
     # g++ -o main main.o -L/test/ -lxist  // 命令(13)
 对比命令(12)，发现`-l`之后不一样了，通过这样的写法，可以在`-L`指定的目录下，结合`-l`后的`xist`，最终找到完整的动态库libxist.so。如果你还不熟悉，在这个地方可以多试一下，原则上，根据动态库的命名方式(lib+名称+.so)，在-l后，接`名称`就可以了。否则，依然会报错。
 
-但到这里还没有完，因为执行完`命令(13)`之后，运行`./main`，会出现下图示的错误
+但到这里还没有完，因为执行完`命令(13)`之后，运行`./main`，会出现下图示的错误。
 ![](https://github.com/WalkingNL/Pics/blob/master/dynlib_fina.jpg)
+这是因为链接器ld提示找不到库文件，可以参考下这篇[文章](https://blog.csdn.net/yjk13703623757/article/details/53217377)。我也采取的时这篇文章的第二种方法，更改过程如下：
+    
+    # cp /test/libxist.so /usr/local/lib
+    # vim /etc/ld.so.conf.d/libiscsi-x86_64.conf //这里的.conf文件可能会有区别，我的是libiscsi-x86_64.conf  
+    在其中加入这句 /usr/local/lib
+    # ldconfig
+完成这几步之后，再把命令(13)执行一次，生成的可执行文件就没有问题了
 
