@@ -11,23 +11,20 @@
 #### 内联函数是什么
 被调函数的函数体代码被整个的插入到调用处，而不再通过call语句进行调用，这就是内联函数。为什么要这样做呢？因为对函数进行调用，有固有的时间损耗(后面会详细分析)，而这种损耗在某些情况下是巨大的，所以需要内联函数。
 
+怎样告诉编译器一个类成员函数要被内联呢？方式上，有两种，这里简单看一下就行。如下面的例子(示例来自[这里]())。(1)显式的的定义，可以看到在类体外定义内联函数时，前面有`inline`关键字。(2)隐式的定义，当在类的里面声明成员函数的同时也给出了函数体，此时`inline`关键字可以省略。像`GetBalance()`方法。**为什么呢？为什么都要在有函数体的地方，才能定义**，往后看。
+    
     // Inline_Member_Functions.cpp
     class Account
     {
     public:
         Account(double initial_balance) { balance = initial_balance; }
-        double GetBalance();
+        double GetBalance() { return balance } // 隐式的定义
         double Deposit( double Amount );
         double Withdraw( double Amount );
     private:
         double balance;
     };
-
-    inline double Account::GetBalance()
-    {
-        return balance;
-    }
-
+    // 显式的定义
     inline double Account::Deposit( double Amount )
     {
         return ( balance += Amount );
