@@ -17,14 +17,19 @@
     class Account
     {
     public:
-        Account(double initial_balance) { balance = initial_balance; }
-        double GetBalance() { return balance } // 隐式的定义
+        // 隐式的定义
+        void SetAccount(double initial_balance) { balance = initial_balance; }
+        double GetBalance();
         double Deposit( double Amount );
         double Withdraw( double Amount );
     private:
         double balance;
     };
     // 显式的定义
+    double GetBalance() 
+    { 
+        return balance;
+    }    
     inline double Account::Deposit( double Amount )
     {
         return ( balance += Amount );
@@ -38,8 +43,65 @@
     {
     }
 
-###### 编译单元(compilation unit)
-C++的编译是以`编译单元`为单位进行编译的，一个编译单元的大小大致和一个`.cpp`文件相当。我们知道，C++在进行编译前，还有个预处理阶段，在这个阶段，预处理会把头文件的内容完整的拷贝到`.cpp`文件的相应位置，如果有宏，还要进行宏展开等操作。等到预处理阶段真正完毕之后，编译才开始。
+###### 编译单元(compilation unit)与ODR原则
+C++的编译是以`编译单元`为单位进行编译的，一个编译单元的大小大致和一个`.cpp`文件相当。我们知道，C++在进行编译前，还有个预处理阶段，在这个阶段，预处理会把头文件的内容完整的拷贝到`.cpp`文件的相应位置，如果有宏，还要进行宏展开等操作。等到预处理阶段真正完毕之后，编译才开始。在编译某个编译单元时，其中若有内联函数的调用，那么内联函数体必须在编译单元内。因为如果不在其中，就无法完成对调用处代码进行替代。若存在多个编译单元用到一个内联函数，按照C++规范的要求，其中的内联函数定义必须完全一致，这就是ODR(one definition rule)原则。所以，结合代码的可维护性考虑，最好将内联函数定义在头文件中，这样一来，各个编译单元中只要包含对该内联函数的`.h`文件就OK。讨论这些，只是一种建议和提醒，如果能在编码阶段就完全考虑好，后续维护起来会容易很多。
+
+接下来，我们分析案例。如下：
+
+    #include "account.h"
+
+    void func()
+    {
+        Account a;
+        a.SetAccount(100.0);
+        cout << a.GetBalance();
+        ......
+    }
+首先，进入func()时，在其栈帧中开辟空间用以存放对象a。等到进入到函数体里面，完成对对象a的构造，注意这里会调用Account默认的构造函数。然后将100.0进行压栈(因为接下来要调用函数SetAccount())，调用SetAccount函数，开辟SetAccount()函数自己的栈帧，返回时在销毁。完了之后再调用GetBlance()函数，把该函数的返回值压栈。到最后调用`cout`的`<<`操作符输出压栈的结果。这是没有内联的情况，下面看看如果内联呢，会有什么不同？
+
+    #include "account.h"
+
+    void func()
+    {
+        Account a;
+        // a.SetAccount(100.0);
+        a.balance = 100.0;
+        
+        // cout << a.GetBalance() << endl;
+        double tmp = a.balance;
+        cout << tmp;
+        ......
+    }
+以上代码就是内联之后的情形，怎么样，是不是很酷！节省了函数调用必须的参数压栈、开辟栈帧及之后的各种销毁等。而且，结合代码编译器还能继续优化。如下面的代码，因为func()的终极目的就是输出设置的值，而内联就有可能让我们达到这样的目的。
+
+    #include "account.h"
+
+    void func()
+    {
+        // Account a;
+        // a.SetAccount(100.0);
+        // a.balance = 100.0;
+        // cout << a.GetBalance() << endl;
+        // double tmp = a.balance;
+        cout << 100.0;
+        ......
+    }
+当然了，这种情况属于极致的优化效果了。能达到这样的效果，是因为编译器知道足够多的上下文信息。所以，到这里，可以总结下内联函数的优点了。
+1. 减少函数调用引起的开销。
+2. 因为把函数体代码替换过来之后，编译器知道的上下文信息更多，分析的会更彻底。
+
+对于第1点，函数调用时都有哪些开销呢？前面已经提到了几个，下面我们更为全面的学习一下。看下面的代码：
+
+    void func_main()
+    {
+        int i = func_ord(a, b, c); // (1)
+        ......                     // (2)
+    }
+当调用func_ord()之前，func_main()会做哪些操作呢？
+首先，参数压栈，上面的a、b、c。如果它们是对象，还有拷贝构造的操作；
+然后是保存返回地址，当函数调用结束后，要从哪里开始执行；
+还需要保存维护好当前函数栈帧空间中的一些寄存器信息，如堆栈指针和栈帧指针这些的。还有其他与平台相关的寄存器信息；
+最后还有一些通用寄存器内容，因为通用寄存器不会区分调用者与被调用者，这有点类似全局的变量。进入被调函数后，有可能被修改，以致调用函数中的信息被覆盖。因此还需要保存它们。
 
 C语言支持内联函数的特性吗？答案是支持。只是在声明上有点区别，`inline`关键字只能用在C++中，不过这个关键字还有两个变体，分别是`__inline`与`__forceinline`，它俩C和C++语言都支持。至于它们的区别其实也不大，我们放在后面说吧。
 
