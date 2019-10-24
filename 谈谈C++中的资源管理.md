@@ -1,4 +1,9 @@
-今天在Stack Overflow上看到一个有趣的[话题](https://stackoverflow.com/questions/3669833/c11-scope-exit-guard-a-good-idea)，是关于`Scope Guard`的，我们知道`Scope Guard`在处理类似异常安全这样的问题时，非常实用且易用。
+今天在Stack Overflow上看到一个有趣的[讨论](https://stackoverflow.com/questions/3669833/c11-scope-exit-guard-a-good-idea)，是关于`Scope Guard`的，我们知道`Scope Guard`在处理类似异常安全这样的问题时，非常实用且易用。借着这个劲儿，我也试着谈谈这个话题。
+
+关于ScopeGuard，由来已久，大约20年前，[Andrei](http://erdani.com/index.php/books/)就提出了这个东西。但那个时候C++语言的机制远不及今天这么完备，所以对于这个东西的实现非常繁琐。但繁琐否认不了它的用处。之后像D语言以及[Boost库](http://www.boost.org/libs/scope_exit/)中也都加入了这个特性。对于D语言我了解甚少，但据说这个特性在D语言中大放异彩，从下面的话就能感受出来。
+
+    The D programming team thought the scope guard was a good enough idea that they added it directly to the language
+
 
 ## 资源管理
     内存管理太重要了，不能交给程序员来做
