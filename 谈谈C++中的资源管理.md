@@ -1,4 +1,6 @@
-## 内存管理
+今天在Stack Overflow上看到一个有趣的[话题](https://stackoverflow.com/questions/3669833/c11-scope-exit-guard-a-good-idea)，是关于`Scope Guard`的，我们知道`Scope Guard`在处理类似异常安全这样的问题时，非常实用且易用。
+
+## 资源管理
     内存管理太重要了，不能交给程序员来做
     内存管理太重要了，不能交给机器来做
 这似乎真的成了一个悖论，正因为重要，似乎托管给谁来做，都不保险。我们知道类似Java这种强型别的语言，它正是把内存资源的释放工作交给机器来做，但也正如那句经典的话所言："免费的往往是最贵的"。关于java的内存回收可以看[这里](https://github.com/WalkingNL/JAVA_JVM/blob/master/垃圾回收.md)。
