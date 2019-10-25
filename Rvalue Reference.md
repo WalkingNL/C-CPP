@@ -39,5 +39,50 @@
 #### 完美转发
 完美转发减少了对重载函数依赖，并且有助于规避转发问题的发生。当一个范型函数的参数为引用类型时，这个函数传递(或者说转发)这些参数到另一个函数时，*转发问题*就发生了。例如，如果这个范型函数拥有`const T&`类型的参数，那么这个被调函数不可能修改掉参数的值。而如果这个范型函数拥有`T&`类型的参数，那么该函数无法被一个传递右值类型参数的函数调用(如临时对象或者整型的字面值)。
 
+一般来说，解决这样的问题，你需要分别提供针对参数类型为`T&`以及`const T&`，两种不同的重载函数。因此，随着参数数量的增多，对应重载函数的数量也会以指数量级的速度提升。而右值引用的出现，帮助你只需要写一个版本的函数，这个函数能够接收任意类型的参数，并且转发它们到另一个函数，就好像直接调用另一个函数一样。
 
+思考下面的例子，声明四个结构体类型，`W`，`X`，`Y`，以及`Z`。每个类型的构造函数取**const**及**const**的不同组合作为参数。
 
+    struct W
+    {
+       W(int&, int&) {}
+    };
+
+    struct X
+    {
+       X(const int&, int&) {}
+    };
+
+    struct Y
+    {
+       Y(int&, const int&) {}
+    };
+
+    struct Z
+    {
+       Z(const int&, const int&) {}
+    };
+假设你想要写一个范型函数，用其生成对象。以下示例展示了一种有此功能的函数：
+
+    template <typename T, typename A1, typename A2>
+    T* factory(A1& a1, A2& a2)
+    {
+       return new T(a1, a2);
+    }    
+以下示例展示了如何正确的调用这个`factory`函数：
+    
+    int a = 4, b = 5;
+    W* pw = factory<W>(a, b);
+然而，以下的函数却无法做到对`factory`的有效调用，因为`factory`取的是左值引用，其值可以被修改，但它却被右值类型的参数所调用：
+
+    Z* pz = factory<Z>(2, 2);
+一般来说，解决这个问题，创建与参数类型对应的不同版本的重载函数即可。而右值引用却帮助我们做到只需写一个版本的`factory`函数，如下面的例子所示：
+
+    template <typename T, typename A1, typename A2>
+    T* factory(A1&& a1, A2&& a2)
+    {
+       return new T(std::forward<A1>(a1), std::forward<A2>(a2));
+    }    
+这个例子使用右值引用作为`factory`函数的参数。[std::forward](https://docs.microsoft.com/en-us/cpp/standard-library/utility-functions?view=vs-2019#forward)转发这个`factory`函数的参数到对应模版类的构造函数。
+
+以下的示例展示了再`main`函数中
