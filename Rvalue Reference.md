@@ -137,4 +137,4 @@
 
     In f(const MemoryBlock&). This version cannot modify the parameter.
     In f(MemoryBlock&&). This version can modify the parameter.
-    
+该例中，首先调用`f`，传递的是一个局部变量(左值)作为其参数。第二次调用`f`，传递的是一个临时对象作为参数。因为临时对象无法在程序的任意位置被引用，所以这次调用的`f`的版本是参数类型为右值的那一个，可以随意修改这个对象。
