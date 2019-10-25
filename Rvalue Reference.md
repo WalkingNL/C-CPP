@@ -85,4 +85,18 @@
     }    
 这个例子使用右值引用作为`factory`函数的参数。[std::forward](https://docs.microsoft.com/en-us/cpp/standard-library/utility-functions?view=vs-2019#forward)转发这个`factory`函数的参数到对应模版类的构造函数。
 
-以下的示例展示了再`main`函数中
+以下的示例展示了在`main`函数中使用修订过的`factory`函数创建`W`，`X`，`Y`，以及`Z`类的实例。可以看到`factory`函数转发它的参数(左值或右值)到相应类的构造器中。
+
+    int main()
+    {
+       int a = 4, b = 5;
+       W* pw = factory<W>(a, b);
+       X* px = factory<X>(2, b);
+       Y* py = factory<Y>(a, 2);
+       Z* pz = factory<Z>(2, 2);
+
+       delete pw;
+       delete px;
+       delete py;
+       delete pz;
+    }
