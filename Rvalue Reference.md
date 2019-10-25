@@ -143,9 +143,44 @@
 
 当你编写了一个函数，其参数类型是右值引用时，这个参数在函数体中，会被以左值对待。编译器会把有名的右值引用作为一个左值对待，因为一个有名的对象会被程序中的多个地方引用到；在程序中，若允许多个区域对一个对象进行修改、删除这样的操作，是危险的行为。如若程序的好几个地方对相同的对象进行资源转移这样的操作，只有第一个部分能够成功的转移资源。
 
-下面的例子中，函数`g`存在两个重载的版本，一个参数是左值引用类型，另一个是右值引用类型。而函数`f`取一个右值引用(有名的右值引用)作为其参数，并且返回一个右值引用(无名的右值引用)。从函数`f`中调用函数`g`，
+下面的例子中，函数`g`存在两个重载的版本，一个参数是左值引用类型，另一个是右值引用类型。而函数`f`取一个右值引用(有名的右值引用)作为其参数，并且返回一个右值引用(无名的右值引用)。从函数`f`中调用函数`g`，因为`f`的函数体中，会把有名的右值引用视作左值，所以调用函数`g`时，选择的重载函数的版本是参数类型为左值引用的那一个。在`main`中调用`g`，最终会调用函数`g`参数类型为右值引用的那个版本，因为f函数的返回值是一个右值引用。
+    
+    // named-reference.cpp
+    // Compile with: /EHsc
+    #include <iostream>
+    using namespace std;
 
+    // A class that contains a memory resource.
+    class MemoryBlock
+    {
+       // TODO: Add resources for the class here.
+    };
 
+    void g(const MemoryBlock&)
+    {
+       cout << "In g(const MemoryBlock&)." << endl;
+    }
+
+    void g(MemoryBlock&&)
+    {
+       cout << "In g(MemoryBlock&&)." << endl;
+    }
+
+    MemoryBlock&& f(MemoryBlock&& block)
+    {
+       g(block);
+       return move(block);
+    }
+
+    int main()
+    {
+       g(f(MemoryBlock()));
+    }
+输出结果如下：
+
+    In g(const MemoryBlock&).
+    In g(MemoryBlock&&).
+该例中，`main`函数传递一个右值给函数`f`，`f`的函数体将其作为有名的右值参数。从函数`f`中直接调用函数`g`，绑定这个参数为一个左值引用(函数`g`的第一个重载版本)。
 
 
 
