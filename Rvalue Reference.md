@@ -182,9 +182,131 @@
     In g(MemoryBlock&&).
 该例中，`main`函数传递一个右值给函数`f`，`f`的函数体将其作为有名的右值参数。从函数`f`中直接调用函数`g`，绑定这个参数为一个左值引用(函数`g`的第一个重载版本)。
 
+  * 你可以将左值转换成右值
 
+C++标准库函数[std::move](https://docs.microsoft.com/en-us/cpp/standard-library/utility-functions?view=vs-2019#move)允许你转换一个对象为对这个对象的右值引用。或者你可以使用关键字`static_cast`转换一个左值为右值引用，如下面示例所示：
 
+    // cast-reference.cpp
+    // Compile with: /EHsc
+    #include <iostream>
+    using namespace std;
 
+    // A class that contains a memory resource.
+    class MemoryBlock
+    {
+       // TODO: Add resources for the class here.
+    };
+
+    void g(const MemoryBlock&)
+    {
+       cout << "In g(const MemoryBlock&)." << endl;
+    }
+
+    void g(MemoryBlock&&)
+    {
+       cout << "In g(MemoryBlock&&)." << endl;
+    }
+
+    int main()
+    {
+       MemoryBlock block;
+       g(block);
+       g(static_cast<MemoryBlock&&>(block));
+    }
+输出结果为：
+
+    In g(const MemoryBlock&).
+    In g(MemoryBlock&&).
+**函数模版能够推导模版参数类型并且使用引用折叠规则**
+
+通常情况下，编写一个模版函数，这个函数传递(或者*转发*)其参数到另一个函数，理解取右值引用为参数的模版函数，其模版类型的推到原理是非常重要的。
+
+如果这个函数参数是一个右值，编译器便会推导出这个参数为一个右值引用。例如，如果你传递一个指向类型`X`对象的右值引用到一个模版函数，这个模版函数取`T&&`作为其参数，模版参数推导规则推导出`T`为类型`X`。因此，这个参数是`X&&`。如果函数参数类型是一个左值或**const**型的左值，编译器推导出它的类型为一个左值引用或**const**左值引用。
+
+下面的例子中，声明一个结构体模版，然后特化它为不同的引用类型。这个`print_type_and_value`函数取一个右值为参数，然后转发它给一个适当的对于`S::print`方法的特化版本。在`main`函数中展示了调用`S::print`方法的个中不同方式。
+
+    // template-type-deduction.cpp
+    // Compile with: /EHsc
+    #include <iostream>
+    #include <string>
+    using namespace std;
+
+    template<typename T> struct S;
+
+    // The following structures specialize S by
+    // lvalue reference (T&), const lvalue reference (const T&),
+    // rvalue reference (T&&), and const rvalue reference (const T&&).
+    // Each structure provides a print method that prints the type of
+    // the structure and its parameter.
+
+    template<typename T> struct S<T&> {
+       static void print(T& t)
+       {
+          cout << "print<T&>: " << t << endl;
+       }
+    };
+
+    template<typename T> struct S<const T&> {
+       static void print(const T& t)
+       {
+          cout << "print<const T&>: " << t << endl;
+       }
+    };
+
+    template<typename T> struct S<T&&> {
+       static void print(T&& t)
+       {
+          cout << "print<T&&>: " << t << endl;
+       }
+    };
+
+    template<typename T> struct S<const T&&> {
+       static void print(const T&& t)
+       {
+          cout << "print<const T&&>: " << t << endl;
+       }
+    };
+
+    // This function forwards its parameter to a specialized
+    // version of the S type.
+    template <typename T> void print_type_and_value(T&& t)
+    {
+       S<T&&>::print(std::forward<T>(t));
+    }
+
+    // This function returns the constant string "fourth".
+    const string fourth() { return string("fourth"); }
+
+    int main()
+    {
+       // The following call resolves to:
+       // print_type_and_value<string&>(string& && t)
+       // Which collapses to:
+       // print_type_and_value<string&>(string& t)
+       string s1("first");
+       print_type_and_value(s1);
+
+       // The following call resolves to:
+       // print_type_and_value<const string&>(const string& && t)
+       // Which collapses to:
+       // print_type_and_value<const string&>(const string& t)
+       const string s2("second");
+       print_type_and_value(s2);
+
+       // The following call resolves to:
+       // print_type_and_value<string&&>(string&& t)
+       print_type_and_value(string("third"));
+
+       // The following call resolves to:
+       // print_type_and_value<const string&&>(const string&& t)
+       print_type_and_value(fourth());
+    }
+该例的输出如下：
+
+    print<T&>: first
+    print<const T&>: second
+    print<T&&>: third
+    print<const T&&>: fourth
 
 
 
