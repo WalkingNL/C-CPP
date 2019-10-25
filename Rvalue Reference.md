@@ -100,3 +100,41 @@
        delete py;
        delete pz;
     }
+
+#### 右值引用的其他属性
+**你可以重载一个函数获取一个右值引用以及一个左值引用**
+
+通过重载一个函数，获取一个**const**类型的左值引用或一个右值引用，你可以编写出能够区分不可变的对象(左值)以及可变的临时值(右值)这样的代码。你可依传递一个对象到一个函数，除非这个对象被明确标记为**const**，否则这个函数获取一个右值引用作为参数。以下的示例展示了这个函数`f`，其作为重载函数出现，分别获取一个左值引用和一个右值引用，主函数`main`使用左值和右值分别调用函数`f`。
+
+    // reference-overload.cpp
+    // Compile with: /EHsc
+    #include <iostream>
+    using namespace std;
+
+    // A class that contains a memory resource.
+    class MemoryBlock
+    {
+       // TODO: Add resources for the class here.
+    };
+
+    void f(const MemoryBlock&)
+    {
+       cout << "In f(const MemoryBlock&). This version cannot modify the parameter." << endl;
+    }
+
+    void f(MemoryBlock&&)
+    {
+       cout << "In f(MemoryBlock&&). This version can modify the parameter." << endl;
+    }
+
+    int main()
+    {
+       MemoryBlock block;
+       f(block);
+       f(MemoryBlock());
+    }
+输出结果如下：
+
+    In f(const MemoryBlock&). This version cannot modify the parameter.
+    In f(MemoryBlock&&). This version can modify the parameter.
+    
