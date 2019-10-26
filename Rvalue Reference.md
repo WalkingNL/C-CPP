@@ -307,6 +307,18 @@ C++标准库函数[std::move](https://docs.microsoft.com/en-us/cpp/standard-libr
     print<const T&>: second
     print<T&&>: third
     print<const T&&>: fourth
+为解决对`print_type_and_value`函数的每一次调用，编译器首先运行模版参数推导机制。然后在编译器替换用来被推导的模版参数类型为实际的参数类型时利用引用折叠规则。例如，传递局部变量`s1`到`print_type_and_value`函数，致使编译器产生下面所示的函数定义：
 
+    print_type_and_value<string&>(string& && t)
+接着，编译器利用引用折叠规则简化这个定义为如下：
+    
+    print_type_and_value<string&>(string& t)
+再接着，该版本的`print_type_and_value`函数转发其参数到到真正的对于`S::print`方法的特化版本。
 
+下面的表中总结了引用折叠推导模版参数类型的基本规则
 
+    Expanded type	Collapsed type
+    T& &	T&
+    T& &&	T&
+    T&& &	T&
+    T&& &&	T&&
