@@ -171,7 +171,7 @@
 
 ###### 实例分析
 
-![](https://github.com/WalkingNL/Pics/blob/master/memory_pool3.jpg)
+![](https://github.com/WalkingNL/Pics/blob/master/memory_pool4.jpg)
 
 ###### 内存池初始大小的合理性分析
 上面确定好了内存池初始大小的计算方法，现在给定`B = 100(bytes)`，块头指针部分占用32个字节，`n = 1000`，得出 t = 3,200,000， 
