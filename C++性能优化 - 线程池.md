@@ -15,7 +15,13 @@
   * [条件变量](https://en.cppreference.com/w/cpp/thread/condition_variable)
   * [互斥锁]()
 
-对于条件变量(condition variables)，它是同步原语(synchronization primitive)，使线程处于等待的状态，直到一个特定的条件的发生
+对于条件变量(condition variables)，作为同步原语(synchronization primitive)，用于阻塞线程，直到一个特定的条件的发生。它能使线程自动的释放锁，然后进入到睡眠状态。常结合临界区或读写锁一起使用。它支持唤醒一个或多个处于等待状态的线程。当一个线程被唤醒后，会重新获取之前进入睡眠状态时释放掉的锁。[条件变量类](https://docs.microsoft.com/en-us/cpp/standard-library/condition-variable-class?view=vs-2019)支持的操作主要有：
+
+  * notify_one: 唤醒一个线程。即撤销对某个线程的阻塞。
+  * notify_all：唤醒全部线程。即撤销对全部处于等待条件变量对象的线程的阻塞
+  * wait：阻塞一个线程
+  * wait_for：阻塞一个线程，并指定阻塞的时长。一旦过了这个时长，阻塞的线程就会被唤醒
+  * wait_until：
 
 ##### 条件变量
 
