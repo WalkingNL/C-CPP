@@ -25,4 +25,6 @@
 ###### 多线程
 **thread*thread_id***, // 多个线程之间的切换
 
-**info threads**, // 
+**info threads**, // 查询现有线程
+
+
