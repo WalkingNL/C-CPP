@@ -4,8 +4,8 @@
 #### 远程调试
 接下来，我们一一道来，先从远程调试开始。因为这一块儿我也不熟悉，所以，一起来学习一下。
 
-首先复习一下，进程调试，主要用到的命令
-
+首先复习一下，进程调试，主要用到的命令：
+###### 多进程
 **attach** *process-id* // to debug a running program in the process 
 
 **detach**; // to stop the debug
@@ -22,4 +22,7 @@
 
 此外，还要知道调试器(gdb)提供的[convenience variable](https://sourceware.org/gdb/current/onlinedocs/gdb/Convenience-Vars.html#Convenience-Vars)机制，如`$_inferior`。
 
+###### 多线程
+**thread*thread_id***, // 多个线程之间的切换
 
+**info threads**, // 
