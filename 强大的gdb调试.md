@@ -3,3 +3,7 @@
 
 #### 远程调试
 接下来，我们一一道来，先从远程调试开始。因为这一块儿我也不熟悉，所以，一起来学习一下
+
+attach *process-id* // to debug a running program in the process 
+detach; // to stop the debug
+kill; // Kill the child process in which your program is running under GDB
